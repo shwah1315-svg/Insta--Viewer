@@ -1,32 +1,38 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Insta Viewer</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+    }
+  </script>
   <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     .story-ring { background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%); }
   </style>
 </head>
-<body class="bg-black text-white min-h-screen pb-16">
+<body class="bg-black text-white dark:bg-black dark:text-white min-h-screen pb-16 transition-colors duration-200" id="app-body">
 
   <!-- Header -->
-  <header class="sticky top-0 z-40 bg-black/95 backdrop-blur border-b border-zinc-800 px-4 py-3 flex justify-between items-center">
+  <header class="sticky top-0 z-40 bg-black/95 dark:bg-black/95 backdrop-blur border-b border-zinc-800 px-4 py-3 flex justify-between items-center">
     <div class="flex items-center space-x-2">
-      <h1 id="header-username" class="font-bold text-xl tracking-tight">instagram_user</h1>
-      <i class="fas font-xs fa-chevron-down text-zinc-400"></i>
+      <h1 id="header-username" class="font-bold text-xl tracking-tight">instagram</h1>
+      <i class="fas fa-chevron-down text-xs text-zinc-400"></i>
     </div>
     <div class="flex items-center space-x-4">
-      <button onclick="openSearchModal()" class="text-zinc-200 hover:text-white">
+      <button onclick="toggleTheme()" class="text-zinc-200 hover:text-white p-1">
+        <i id="theme-icon" class="fas fa-moon text-xl"></i>
+      </button>
+      <button onclick="openSearchModal()" class="text-zinc-200 hover:text-white p-1">
         <i class="fas fa-search text-xl"></i>
       </button>
-      <i class="far fa-heart text-xl text-zinc-200"></i>
       <i class="far fa-paper-plane text-xl text-zinc-200"></i>
     </div>
   </header>
@@ -54,36 +60,30 @@
         </div>
       </div>
 
-      <div id="full-name" class="font-bold text-sm">User Name</div>
-      <div id="bio-text" class="text-sm mt-1 whitespace-pre-line text-zinc-200">Profile Bio</div>
+      <div id="full-name" class="font-bold text-sm">User Profile</div>
+      <div id="bio-text" class="text-sm mt-1 whitespace-pre-line text-zinc-200">Loading bio...</div>
 
       <!-- Action Buttons -->
       <div class="flex space-x-2 mt-4">
-        <button class="flex-1 bg-zinc-800 font-semibold py-1.5 rounded-lg text-sm">Following</button>
-        <button class="flex-1 bg-zinc-800 font-semibold py-1.5 rounded-lg text-sm">Message</button>
+        <button id="follow-btn" onclick="toggleFollow()" class="flex-1 bg-blue-600 font-semibold py-1.5 rounded-lg text-sm hover:bg-blue-700 transition">Follow</button>
+        <button class="flex-1 bg-zinc-800 font-semibold py-1.5 rounded-lg text-sm hover:bg-zinc-700 transition">Message</button>
       </div>
     </div>
 
     <!-- Highlights -->
-    <div class="flex space-x-4 overflow-x-auto no-scrollbar px-4 py-3 border-b border-zinc-900">
-      <div class="flex flex-col items-center space-y-1 min-w-[64px]">
-        <div class="w-16 h-16 rounded-full border border-zinc-700 p-0.5">
-          <img class="w-full h-full rounded-full object-cover" src="https://via.placeholder.com/80" alt="Highlight">
-        </div>
-        <span class="text-xs text-zinc-400 truncate w-16 text-center">Highlights</span>
-      </div>
+    <div id="highlights-container" class="flex space-x-4 overflow-x-auto no-scrollbar px-4 py-3 border-b border-zinc-900">
+      <!-- Story highlights load dynamically -->
     </div>
 
     <!-- Tabs -->
     <div class="flex justify-around border-b border-zinc-800">
-      <button class="py-3 flex-1 text-center border-b-2 border-white text-white"><i class="fas fa-th text-lg"></i></button>
-      <button class="py-3 flex-1 text-center text-zinc-500"><i class="fas fa-film text-lg"></i></button>
-      <button class="py-3 flex-1 text-center text-zinc-500"><i class="far fa-id-badge text-lg"></i></button>
+      <button onclick="switchTab('posts')" id="tab-posts" class="py-3 flex-1 text-center border-b-2 border-white text-white"><i class="fas fa-th text-lg"></i></button>
+      <button onclick="switchTab('reels')" id="tab-reels" class="py-3 flex-1 text-center text-zinc-500"><i class="fas fa-film text-lg"></i></button>
     </div>
 
-    <!-- Grid -->
+    <!-- Content Grid -->
     <div id="posts-grid" class="grid grid-cols-3 gap-0.5 mt-0.5">
-      <!-- Media Items will load here -->
+      <!-- Media Items -->
     </div>
   </main>
 
@@ -94,16 +94,124 @@
         <h3 class="font-bold text-lg">Search Profile</h3>
         <button onclick="closeSearchModal()" class="text-zinc-400 hover:text-white"><i class="fas fa-times text-xl"></i></button>
       </div>
-      <input type="text" id="search-input" placeholder="Enter Instagram Username..." class="w-full bg-zinc-800 text-white px-4 py-2.5 rounded-xl border border-zinc-700 focus:outline-none focus:border-blue-500 mb-4">
+      <input type="text" id="search-input" placeholder="Enter Username..." class="w-full bg-zinc-800 text-white px-4 py-2.5 rounded-xl border border-zinc-700 focus:outline-none focus:border-blue-500 mb-4" onkeypress="if(event.key==='Enter') fetchProfile()">
       <button onclick="fetchProfile()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-xl">View Profile</button>
     </div>
   </div>
 
   <script>
+    let isFollowing = false;
+    let currentTab = 'posts';
+    let currentData = null;
+
+    function toggleTheme() {
+      const body = document.getElementById('app-body');
+      const icon = document.getElementById('theme-icon');
+      if (body.classList.contains('bg-black')) {
+        body.classList.remove('bg-black', 'text-white');
+        body.classList.add('bg-white', 'text-black');
+        icon.classList.remove('fa-moon');
+        icon.classList.add('fa-sun');
+      } else {
+        body.classList.remove('bg-white', 'text-black');
+        body.classList.add('bg-black', 'text-white');
+        icon.classList.remove('fa-sun');
+        icon.classList.add('fa-moon');
+      }
+    }
+
+    function toggleFollow() {
+      const btn = document.getElementById('follow-btn');
+      isFollowing = !isFollowing;
+      btn.innerText = isFollowing ? "Following" : "Follow";
+      btn.className = isFollowing 
+        ? "flex-1 bg-zinc-800 font-semibold py-1.5 rounded-lg text-sm" 
+        : "flex-1 bg-blue-600 font-semibold py-1.5 rounded-lg text-sm hover:bg-blue-700";
+    }
+
     function openSearchModal() { document.getElementById('search-modal').classList.remove('hidden'); }
     function closeSearchModal() { document.getElementById('search-modal').classList.add('hidden'); }
 
+    async function loadProfileData(username) {
+      document.getElementById('header-username').innerText = username;
+      document.getElementById('full-name').innerText = "Loading...";
+      
+      try {
+        const response = await fetch(`/api/profile/${username}`);
+        const data = await response.json();
+        currentData = data;
+
+        if(data.status === "success") {
+          document.getElementById('header-username').innerText = data.username;
+          document.getElementById('full-name').innerText = data.name;
+          document.getElementById('bio-text').innerText = data.bio;
+          document.getElementById('posts-count').innerText = data.posts_count;
+          document.getElementById('followers-count').innerText = data.followers_count;
+          document.getElementById('following-count').innerText = data.following_count;
+          document.getElementById('profile-pic').src = data.profile_pic;
+
+          // Render Highlights
+          const hlContainer = document.getElementById('highlights-container');
+          hlContainer.innerHTML = '';
+          if(data.highlights) {
+            data.highlights.forEach(hl => {
+              hlContainer.innerHTML += `
+                <div class="flex flex-col items-center space-y-1 min-w-[64px]">
+                  <div class="w-16 h-16 rounded-full border border-zinc-700 p-0.5">
+                    <img class="w-full h-full rounded-full object-cover" src="${hl.cover}" alt="Highlight">
+                  </div>
+                  <span class="text-xs text-zinc-400 truncate w-16 text-center">${hl.title}</span>
+                </div>
+              `;
+            });
+          }
+
+          renderGrid();
+        }
+      } catch (err) {
+        console.error("Fetch Error:", err);
+      }
+    }
+
+    function switchTab(tab) {
+      currentTab = tab;
+      document.getElementById('tab-posts').className = tab === 'posts' ? "py-3 flex-1 text-center border-b-2 border-white text-white" : "py-3 flex-1 text-center text-zinc-500";
+      document.getElementById('tab-reels').className = tab === 'reels' ? "py-3 flex-1 text-center border-b-2 border-white text-white" : "py-3 flex-1 text-center text-zinc-500";
+      renderGrid();
+    }
+
+    function renderGrid() {
+      const grid = document.getElementById('posts-grid');
+      grid.innerHTML = '';
+      if(currentData && currentData.posts) {
+        currentData.posts.forEach((post, i) => {
+          grid.innerHTML += `
+            <div class="aspect-square bg-zinc-800 relative overflow-hidden group">
+              <img src="${post.url}?random=${i + (currentTab === 'reels' ? 50 : 0)}" class="w-full h-full object-cover">
+              ${currentTab === 'reels' ? '<i class="fas fa-play absolute top-2 right-2 text-white text-xs drop-shadow"></i>' : ''}
+            </div>
+          `;
+        });
+      }
+    }
+
     function fetchProfile() {
+      const username = document.getElementById('search-input').value.trim();
+      if (!username) return;
+      
+      localStorage.setItem('saved_user', username);
+      loadProfileData(username);
+      closeSearchModal();
+    }
+
+    window.onload = function() {
+      const savedUser = localStorage.getItem('saved_user') || 'instagram';
+      document.getElementById('search-input').value = savedUser;
+      loadProfileData(savedUser);
+    };
+  </script>
+</body>
+</html>    function fetchProfile() {
       const username = document.getElementById('search-input').value.trim();
       if (!username) return;
       
