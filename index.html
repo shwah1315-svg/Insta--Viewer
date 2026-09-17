@@ -1,216 +1,48 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Real Insta Viewer</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-</head>
-<body class="bg-black text-white min-h-screen flex flex-col font-sans">
+from flask import Flask, render_template, jsonify
+import requests
 
-  <!-- Header -->
-  <header class="sticky top-0 z-40 bg-zinc-950 border-b border-zinc-800 px-4 py-3 flex justify-between items-center">
-    <div class="flex items-center space-x-2">
-      <i class="fab fa-instagram text-pink-500 text-2xl"></i>
-      <h1 class="font-bold text-lg text-white">Insta Viewer</h1>
-    </div>
-    <button onclick="openSearchModal()" class="bg-gradient-to-r from-pink-500 to-purple-600 text-white text-xs font-semibold px-3 py-2 rounded-xl flex items-center space-x-1 shadow-md">
-      <i class="fas fa-search"></i>
-      <span>Search ID</span>
-    </button>
-  </header>
+app = Flask(__name__, template_folder='.')
 
-  <!-- Main Profile Display -->
-  <main class="flex-1 max-w-md mx-auto w-full p-4 flex flex-col justify-center">
+RAPIDAPI_KEY = "a35cfdd1bamshdfb2a0c44650aa1p1bae90jsn701d6190a734"
+RAPIDAPI_HOST = "instagram-scraper-stable-api.p.rapidapi.com"
+
+@app.route('/')
+def home():
+    return render_template('index.html')
+
+@app.route('/api/profile/<username>')
+def get_profile(username):
+    username = username.strip().replace('@', '')
+    url = f"https://{RAPIDAPI_HOST}/get_ig_user_info.php"
     
-    <div id="profile-card" class="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 text-center shadow-2xl relative overflow-hidden">
-      
-      <!-- Profile Picture -->
-      <div class="relative w-28 h-28 mx-auto mb-4">
-        <div class="absolute inset-0 bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600 rounded-full p-1"></div>
-        <img id="user-dp" src="https://via.placeholder.com/150" class="w-full h-full rounded-full object-cover relative z-10 border-2 border-black" alt="DP">
-      </div>
-
-      <!-- Details -->
-      <div class="flex items-center justify-center space-x-1">
-        <h2 id="user-fullname" class="text-xl font-bold text-white">Searching...</h2>
-        <i id="verified-badge" class="fas fa-check-circle text-blue-500 text-sm hidden"></i>
-      </div>
-      <p id="user-handle" class="text-sm text-pink-400 font-medium">@username</p>
-      
-      <p id="user-bio" class="text-xs text-zinc-400 mt-3 px-2 line-clamp-3">Loading biography...</p>
-
-      <!-- Stats Grid -->
-      <div class="grid grid-cols-3 gap-2 bg-zinc-950 border border-zinc-800 rounded-2xl p-3 mt-5">
-        <div>
-          <span id="stat-posts" class="block font-bold text-base text-white">0</span>
-          <span class="text-[10px] text-zinc-500 uppercase">Posts</span>
-        </div>
-        <div>
-          <span id="stat-followers" class="block font-bold text-base text-white">0</span>
-          <span class="text-[10px] text-zinc-500 uppercase">Followers</span>
-        </div>
-        <div>
-          <span id="stat-following" class="block font-bold text-base text-white">0</span>
-          <span class="text-[10px] text-zinc-500 uppercase">Following</span>
-        </div>
-      </div>
-
-      <!-- Status Indicator -->
-      <div class="mt-5">
-        <div class="w-full bg-zinc-800 text-zinc-300 font-semibold py-2.5 rounded-xl text-xs flex items-center justify-center space-x-2">
-          <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-          <span>100% Real Live RapidAPI Data</span>
-        </div>
-      </div>
-
-    </div>
-  </main>
-
-  <!-- Search Modal -->
-  <div id="search-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-zinc-900 w-full max-w-sm rounded-3xl p-6 border border-zinc-800 shadow-2xl">
-      <div class="flex justify-between items-center mb-4">
-        <h3 class="font-bold text-lg text-white">ID Search Karein</h3>
-        <button onclick="closeSearchModal()" class="text-zinc-400 hover:text-white"><i class="fas fa-times text-xl"></i></button>
-      </div>
-      
-      <div class="relative mb-4">
-        <span class="absolute left-4 top-3.5 text-zinc-500">@</span>
-        <input type="text" id="search-input" placeholder="e.g. virat.kohli" class="w-full bg-zinc-800 text-white pl-9 pr-4 py-3 rounded-2xl border border-zinc-700 focus:outline-none focus:border-pink-500 text-sm">
-      </div>
-      
-      <button onclick="searchProfile()" class="w-full bg-gradient-to-r from-pink-500 to-purple-600 text-white font-bold py-3 rounded-2xl text-sm shadow-lg">
-        Live Profile Fetch Karein
-      </button>
-    </div>
-  </div>
-
-  <script>
-    function openSearchModal() { document.getElementById('search-modal').classList.remove('hidden'); }
-    function closeSearchModal() { document.getElementById('search-modal').classList.add('hidden'); }
-
-    async function fetchUserData(username) {
-      username = username.replace('@', '').trim();
-      if (!username) return;
-
-      document.getElementById('user-fullname').innerText = "Fetching Live Data...";
-      document.getElementById('user-handle').innerText = '@' + username;
-      
-      try {
-        const res = await fetch('/api/profile/' + username);
-        const data = await res.json();
-        
-        if (data.status === 'success') {
-          document.getElementById('user-dp').src = data.profile_pic;
-          document.getElementById('user-fullname').innerText = data.full_name || username;
-          document.getElementById('user-handle').innerText = '@' + data.username;
-          document.getElementById('user-bio').innerText = data.biography || "No bio available";
-          
-          document.getElementById('stat-posts').innerText = Number(data.posts_count).toLocaleString();
-          document.getElementById('stat-followers').innerText = Number(data.followers).toLocaleString();
-          document.getElementById('stat-following').innerText = Number(data.following).toLocaleString();
-
-          if (data.is_verified) {
-            document.getElementById('verified-badge').classList.remove('hidden');
-          } else {
-            document.getElementById('verified-badge').classList.add('hidden');
-          }
-        }
-      } catch (err) {
-        document.getElementById('user-fullname').innerText = username;
-      }
+    headers = {
+        "x-rapidapi-key": RAPIDAPI_KEY,
+        "x-rapidapi-host": RAPIDAPI_HOST
     }
+    
+    params = {"username": username}
+    
+    try:
+        response = requests.get(url, headers=headers, params=params, timeout=10)
+        if response.status_code == 200:
+            res_data = response.json()
+            user = res_data.get('user', res_data)
+            
+            return jsonify({
+                "status": "success",
+                "username": user.get('username', username),
+                "full_name": user.get('full_name', username),
+                "biography": user.get('biography', ''),
+                "profile_pic": user.get('profile_pic_url_hd') or user.get('profile_pic_url'),
+                "followers": user.get('follower_count', 0),
+                "following": user.get('following_count', 0),
+                "posts_count": user.get('media_count', 0),
+                "is_verified": user.get('is_verified', False)
+            })
+    except Exception as e:
+        pass
 
-    function searchProfile() {
-      const input = document.getElementById('search-input').value;
-      if (input) {
-        fetchUserData(input);
-        closeSearchModal();
-      }
-    }
+    return jsonify({"status": "error", "message": "Failed"})
 
-    window.onload = function() {
-      fetchUserData('Mohit_kushwah_17');
-    };
-  </script>
-</body>
-</html>    let currentTab = 'posts';
-    let activeUsername = 'Mohit_kushwah_17';
-
-    function openSearchModal() { document.getElementById('search-modal').classList.remove('hidden'); }
-    function closeSearchModal() { document.getElementById('search-modal').classList.add('hidden'); }
-
-    async function fetchUserData(username) {
-      username = username.replace('@', '').trim();
-      if (!username) return;
-
-      activeUsername = username;
-      document.getElementById('user-fullname').innerText = "Fetching...";
-      document.getElementById('user-handle').innerText = '@' + username;
-      
-      try {
-        const res = await fetch('/api/profile/' + username);
-        const data = await res.json();
-        
-        if (data.status === 'success') {
-          document.getElementById('user-dp').src = data.profile_pic;
-          document.getElementById('user-fullname').innerText = data.full_name || username;
-          document.getElementById('user-handle').innerText = '@' + data.username;
-          document.getElementById('user-bio').innerText = data.biography || "No bio available";
-          
-          document.getElementById('stat-posts').innerText = data.posts_count;
-          document.getElementById('stat-followers').innerText = data.followers;
-          document.getElementById('stat-following').innerText = data.following;
-
-          if (data.is_verified) {
-            document.getElementById('verified-badge').classList.remove('hidden');
-          } else {
-            document.getElementById('verified-badge').classList.add('hidden');
-          }
-
-          renderGrid();
-        }
-      } catch (err) {
-        document.getElementById('user-fullname').innerText = username;
-      }
-    }
-
-    function switchTab(tab) {
-      currentTab = tab;
-      document.getElementById('tab-posts').className = tab === 'posts' ? "flex-1 py-3 text-center border-b-2 border-white text-white font-medium text-xs flex items-center justify-center space-x-2" : "flex-1 py-3 text-center text-zinc-500 font-medium text-xs flex items-center justify-center space-x-2";
-      document.getElementById('tab-reels').className = tab === 'reels' ? "flex-1 py-3 text-center border-b-2 border-white text-white font-medium text-xs flex items-center justify-center space-x-2" : "flex-1 py-3 text-center text-zinc-500 font-medium text-xs flex items-center justify-center space-x-2";
-      renderGrid();
-    }
-
-    function renderGrid() {
-      const grid = document.getElementById('media-grid');
-      grid.innerHTML = '';
-      
-      // Render layout placeholders for posts/reels
-      for(let i = 1; i <= 9; i++) {
-        const seed = activeUsername + i + (currentTab === 'reels' ? 'reel' : 'post');
-        grid.innerHTML += `
-          <div class="aspect-square bg-zinc-900 relative overflow-hidden group">
-            <img src="https://picsum.photos/seed/${seed}/300/300" class="w-full h-full object-cover">
-            ${currentTab === 'reels' ? '<i class="fas fa-play absolute top-2 right-2 text-white text-[10px] drop-shadow"></i>' : ''}
-          </div>
-        `;
-      }
-    }
-
-    function searchProfile() {
-      const input = document.getElementById('search-input').value;
-      if (input) {
-        fetchUserData(input);
-        closeSearchModal();
-      }
-    }
-
-    window.onload = function() {
-      fetchUserData('Mohit_kushwah_17');
-    };
-  </script>
-</body>
-</html>
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000)
