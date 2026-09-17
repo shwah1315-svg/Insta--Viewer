@@ -6,11 +6,6 @@
   <title>Insta Viewer</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-    }
-  </script>
   <style>
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
     .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -18,21 +13,19 @@
     .story-ring { background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%); }
   </style>
 </head>
-<body class="bg-black text-white dark:bg-black dark:text-white min-h-screen pb-16 transition-colors duration-200" id="app-body">
+<body class="bg-black text-white min-h-screen pb-16">
 
   <!-- Header -->
-  <header class="sticky top-0 z-40 bg-black/95 dark:bg-black/95 backdrop-blur border-b border-zinc-800 px-4 py-3 flex justify-between items-center">
+  <header class="sticky top-0 z-40 bg-zinc-950 border-b border-zinc-800 px-4 py-3 flex justify-between items-center">
     <div class="flex items-center space-x-2">
-      <h1 id="header-username" class="font-bold text-xl tracking-tight">instagram</h1>
+      <h1 id="header-username" class="font-bold text-lg tracking-tight text-white">instagram</h1>
       <i class="fas fa-chevron-down text-xs text-zinc-400"></i>
     </div>
     <div class="flex items-center space-x-4">
-      <button onclick="toggleTheme()" class="text-zinc-200 hover:text-white p-1">
-        <i id="theme-icon" class="fas fa-moon text-xl"></i>
-      </button>
       <button onclick="openSearchModal()" class="text-zinc-200 hover:text-white p-1">
         <i class="fas fa-search text-xl"></i>
       </button>
+      <i class="far fa-heart text-xl text-zinc-200"></i>
       <i class="far fa-paper-plane text-xl text-zinc-200"></i>
     </div>
   </header>
@@ -46,33 +39,33 @@
         </div>
         <div class="flex space-x-6 text-center">
           <div>
-            <div id="posts-count" class="font-bold text-lg">0</div>
+            <div id="posts-count" class="font-bold text-lg text-white">0</div>
             <div class="text-xs text-zinc-400">Posts</div>
           </div>
           <div>
-            <div id="followers-count" class="font-bold text-lg">0</div>
+            <div id="followers-count" class="font-bold text-lg text-white">0</div>
             <div class="text-xs text-zinc-400">Followers</div>
           </div>
           <div>
-            <div id="following-count" class="font-bold text-lg">0</div>
+            <div id="following-count" class="font-bold text-lg text-white">0</div>
             <div class="text-xs text-zinc-400">Following</div>
           </div>
         </div>
       </div>
 
-      <div id="full-name" class="font-bold text-sm">User Profile</div>
-      <div id="bio-text" class="text-sm mt-1 whitespace-pre-line text-zinc-200">Loading bio...</div>
+      <div id="full-name" class="font-bold text-sm text-white">User Profile</div>
+      <div id="bio-text" class="text-sm mt-1 whitespace-pre-line text-zinc-300">Loading profile bio...</div>
 
       <!-- Action Buttons -->
       <div class="flex space-x-2 mt-4">
-        <button id="follow-btn" onclick="toggleFollow()" class="flex-1 bg-blue-600 font-semibold py-1.5 rounded-lg text-sm hover:bg-blue-700 transition">Follow</button>
-        <button class="flex-1 bg-zinc-800 font-semibold py-1.5 rounded-lg text-sm hover:bg-zinc-700 transition">Message</button>
+        <button id="follow-btn" onclick="toggleFollow()" class="flex-1 bg-blue-600 font-semibold py-1.5 rounded-lg text-sm text-white hover:bg-blue-700 transition">Follow</button>
+        <button class="flex-1 bg-zinc-800 font-semibold py-1.5 rounded-lg text-sm text-white hover:bg-zinc-700 transition">Message</button>
       </div>
     </div>
 
     <!-- Highlights -->
     <div id="highlights-container" class="flex space-x-4 overflow-x-auto no-scrollbar px-4 py-3 border-b border-zinc-900">
-      <!-- Story highlights load dynamically -->
+      <!-- Highlights load here -->
     </div>
 
     <!-- Tabs -->
@@ -83,7 +76,7 @@
 
     <!-- Content Grid -->
     <div id="posts-grid" class="grid grid-cols-3 gap-0.5 mt-0.5">
-      <!-- Media Items -->
+      <!-- Media Items load here -->
     </div>
   </main>
 
@@ -91,7 +84,7 @@
   <div id="search-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
     <div class="bg-zinc-900 w-full max-w-sm rounded-2xl p-4 border border-zinc-800">
       <div class="flex justify-between items-center mb-4">
-        <h3 class="font-bold text-lg">Search Profile</h3>
+        <h3 class="font-bold text-lg text-white">Search Profile</h3>
         <button onclick="closeSearchModal()" class="text-zinc-400 hover:text-white"><i class="fas fa-times text-xl"></i></button>
       </div>
       <input type="text" id="search-input" placeholder="Enter Username..." class="w-full bg-zinc-800 text-white px-4 py-2.5 rounded-xl border border-zinc-700 focus:outline-none focus:border-blue-500 mb-4" onkeypress="if(event.key==='Enter') fetchProfile()">
@@ -104,29 +97,13 @@
     let currentTab = 'posts';
     let currentData = null;
 
-    function toggleTheme() {
-      const body = document.getElementById('app-body');
-      const icon = document.getElementById('theme-icon');
-      if (body.classList.contains('bg-black')) {
-        body.classList.remove('bg-black', 'text-white');
-        body.classList.add('bg-white', 'text-black');
-        icon.classList.remove('fa-moon');
-        icon.classList.add('fa-sun');
-      } else {
-        body.classList.remove('bg-white', 'text-black');
-        body.classList.add('bg-black', 'text-white');
-        icon.classList.remove('fa-sun');
-        icon.classList.add('fa-moon');
-      }
-    }
-
     function toggleFollow() {
       const btn = document.getElementById('follow-btn');
       isFollowing = !isFollowing;
       btn.innerText = isFollowing ? "Following" : "Follow";
       btn.className = isFollowing 
-        ? "flex-1 bg-zinc-800 font-semibold py-1.5 rounded-lg text-sm" 
-        : "flex-1 bg-blue-600 font-semibold py-1.5 rounded-lg text-sm hover:bg-blue-700";
+        ? "flex-1 bg-zinc-800 font-semibold py-1.5 rounded-lg text-sm text-white" 
+        : "flex-1 bg-blue-600 font-semibold py-1.5 rounded-lg text-sm text-white hover:bg-blue-700";
     }
 
     function openSearchModal() { document.getElementById('search-modal').classList.remove('hidden'); }
@@ -134,10 +111,10 @@
 
     async function loadProfileData(username) {
       document.getElementById('header-username').innerText = username;
-      document.getElementById('full-name').innerText = "Loading...";
+      document.getElementById('full-name').innerText = username;
       
       try {
-        const response = await fetch(`/api/profile/${username}`);
+        const response = await fetch('/api/profile/' + username);
         const data = await response.json();
         currentData = data;
 
@@ -150,7 +127,6 @@
           document.getElementById('following-count').innerText = data.following_count;
           document.getElementById('profile-pic').src = data.profile_pic;
 
-          // Render Highlights
           const hlContainer = document.getElementById('highlights-container');
           hlContainer.innerHTML = '';
           if(data.highlights) {
@@ -186,7 +162,7 @@
       if(currentData && currentData.posts) {
         currentData.posts.forEach((post, i) => {
           grid.innerHTML += `
-            <div class="aspect-square bg-zinc-800 relative overflow-hidden group">
+            <div class="aspect-square bg-zinc-900 relative overflow-hidden">
               <img src="${post.url}?random=${i + (currentTab === 'reels' ? 50 : 0)}" class="w-full h-full object-cover">
               ${currentTab === 'reels' ? '<i class="fas fa-play absolute top-2 right-2 text-white text-xs drop-shadow"></i>' : ''}
             </div>
@@ -205,44 +181,7 @@
     }
 
     window.onload = function() {
-      const savedUser = localStorage.getItem('saved_user') || 'instagram';
-      document.getElementById('search-input').value = savedUser;
-      loadProfileData(savedUser);
-    };
-  </script>
-</body>
-</html>    function fetchProfile() {
-      const username = document.getElementById('search-input').value.trim();
-      if (!username) return;
-      
-      // Auto-save last searched username
-      localStorage.setItem('saved_user', username);
-      loadProfileData(username);
-      closeSearchModal();
-    }
-
-    function loadProfileData(username) {
-      document.getElementById('header-username').innerText = username;
-      document.getElementById('full-name').innerText = username.toUpperCase();
-      document.getElementById('bio-text').innerText = "Viewing profile of @" + username;
-      document.getElementById('posts-count').innerText = "32";
-      document.getElementById('followers-count').innerText = "1.2k";
-      document.getElementById('following-count').innerText = "450";
-
-      const grid = document.getElementById('posts-grid');
-      grid.innerHTML = '';
-      for (let i = 1; i <= 9; i++) {
-        grid.innerHTML += `
-          <div class="aspect-square bg-zinc-800 relative group overflow-hidden">
-            <img src="https://picsum.photos/300/300?random=${i}" class="w-full h-full object-cover">
-          </div>
-        `;
-      }
-    }
-
-    // Auto load last saved user on launch
-    window.onload = function() {
-      const savedUser = localStorage.getItem('saved_user') || 'instagram';
+      const savedUser = localStorage.getItem('saved_user') || 'Mohit_kushwah_17';
       document.getElementById('search-input').value = savedUser;
       loadProfileData(savedUser);
     };
