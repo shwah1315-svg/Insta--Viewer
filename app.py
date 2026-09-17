@@ -1,9 +1,10 @@
 from flask import Flask, render_template, jsonify
 import requests
-import re
-import json
 
 app = Flask(__name__, template_folder='.')
+
+RAPIDAPI_KEY = "a35cfdd1bamshdfb2a0c44650aa1p1bae90jsn701d6190a734"
+RAPIDAPI_HOST = "instagram-scraper-stable-api.p.rapidapi.com"
 
 @app.route('/')
 def home():
@@ -12,70 +13,39 @@ def home():
 @app.route('/api/profile/<username>')
 def get_profile(username):
     username = username.strip().replace('@', '')
-    url = f"https://www.instagram.com/{username}/?__a=1&__d=dis"
+    url = "https://instagram-scraper-stable-api.p.rapidapi.com/get_ig_user_id.php"
     
     headers = {
-        'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1',
-        'Accept-Language': 'en-US,en;q=0.9',
+        "x-rapidapi-key": RAPIDAPI_KEY,
+        "x-rapidapi-host": RAPIDAPI_HOST,
+        "content-type": "application/x-www-form-urlencoded"
     }
     
+    payload = f"username_or_url={username}"
+    
     try:
-        # Proxy request to Instagram
-        response = requests.get(url, headers=headers, timeout=8)
-        
+        response = requests.post(url, data=payload, headers=headers, timeout=10)
         if response.status_code == 200:
-            data = response.json()
-            user_info = data.get('graphql', {}).get('user', {}) or data.get('data', {}).get('user', {})
-            
-            if user_info:
-                return jsonify({
-                    "status": "success",
-                    "username": user_info.get('username'),
-                    "full_name": user_info.get('full_name', ''),
-                    "biography": user_info.get('biography', ''),
-                    "profile_pic": user_info.get('profile_pic_url_hd') or user_info.get('profile_pic_url'),
-                    "followers": user_info.get('edge_followed_by', {}).get('count', 0),
-                    "following": user_info.get('edge_follow', {}).get('count', 0),
-                    "posts_count": user_info.get('edge_owner_to_timeline_media', {}).get('count', 0),
-                    "is_private": user_info.get('is_private', False),
-                    "is_verified": user_info.get('is_verified', False)
-                })
-        
-        # Fallback public fetch via Bibliogram/Proxy service
-        fallback_res = requests.get(f"https://imginn.com/{username}/", headers=headers, timeout=8)
-        if fallback_res.status_code == 200:
-            # Quick Regex extract for fallback
-            dp = re.search(r'class="avatar"[^>]*src="([^"]+)"', fallback_res.text)
-            name = re.search(r'<h1[^>]*>([^<]+)</h1>', fallback_res.text)
+            res_data = response.json()
+            user = res_data.get('user', res_data)
             
             return jsonify({
                 "status": "success",
-                "username": username,
-                "full_name": name.group(1).strip() if name else username,
-                "biography": "Instagram Public Profile Data Fetched Live",
-                "profile_pic": dp.group(1) if dp else "https://via.placeholder.com/150",
-                "followers": "Real",
-                "following": "Real",
-                "posts_count": "Live",
-                "is_private": False,
-                "is_verified": False
+                "username": user.get('username', username),
+                "full_name": user.get('full_name', username),
+                "biography": user.get('biography', ''),
+                "profile_pic": user.get('profile_pic_url_hd') or user.get('profile_pic_url'),
+                "followers": user.get('follower_count', 0),
+                "following": user.get('following_count', 0),
+                "posts_count": user.get('media_count', 0),
+                "is_verified": user.get('is_verified', False)
             })
-
     except Exception as e:
         pass
 
-    # Safe Dynamic Response if IP blocked momentarily
     return jsonify({
-        "status": "success",
-        "username": username,
-        "full_name": username.capitalize(),
-        "biography": "Official Public Account Preview",
-        "profile_pic": f"https://unavatar.io/instagram/{username}",
-        "followers": "Fetching...",
-        "following": "Fetching...",
-        "posts_count": "Live",
-        "is_private": False,
-        "is_verified": True
+        "status": "error",
+        "message": "Data fetch failed"
     })
 
 if __name__ == '__main__':
