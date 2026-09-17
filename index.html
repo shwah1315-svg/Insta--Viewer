@@ -3,107 +3,141 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Real Insta Profile Viewer</title>
+  <title>Real In-App Insta Viewer</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #000; color: #fff; }
-  </style>
 </head>
-<body class="bg-black text-white min-h-screen flex flex-col">
+<body class="bg-black text-white min-h-screen flex flex-col font-sans">
 
   <!-- Header -->
-  <header class="sticky top-0 z-40 bg-zinc-950 border-b border-zinc-800 px-4 py-3 flex justify-between items-center shadow-md">
+  <header class="sticky top-0 z-40 bg-zinc-950 border-b border-zinc-800 px-4 py-3 flex justify-between items-center">
     <div class="flex items-center space-x-2">
       <i class="fab fa-instagram text-pink-500 text-2xl"></i>
-      <h1 class="font-bold text-lg tracking-tight text-white">Insta Viewer</h1>
+      <h1 class="font-bold text-lg text-white">Insta Viewer</h1>
     </div>
-    <button onclick="openSearchModal()" class="bg-gradient-to-r from-pink-500 to-purple-600 hover:opacity-90 text-white text-xs font-semibold px-3 py-2 rounded-xl flex items-center space-x-1.5 shadow-lg">
+    <button onclick="openSearchModal()" class="bg-gradient-to-r from-pink-500 to-purple-600 text-white text-xs font-semibold px-3 py-2 rounded-xl flex items-center space-x-1">
       <i class="fas fa-search"></i>
       <span>Search ID</span>
     </button>
   </header>
 
-  <!-- Main Profile Card Container -->
-  <main class="flex-1 max-w-md mx-auto w-full p-4 flex flex-col justify-between">
+  <!-- Main Display Card -->
+  <main class="flex-1 max-w-md mx-auto w-full p-4 flex flex-col justify-center">
     
-    <!-- Active Target Account Card -->
-    <div class="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 text-center shadow-2xl relative overflow-hidden my-auto">
-      <div class="absolute -top-10 -right-10 w-32 h-32 bg-pink-500/10 rounded-full blur-2xl pointer-events-none"></div>
+    <div id="profile-card" class="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 text-center shadow-2xl relative overflow-hidden">
       
-      <div class="w-24 h-24 mx-auto mb-4 rounded-full bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600 p-1 shadow-xl">
-        <div class="w-full h-full bg-zinc-950 rounded-full flex items-center justify-center overflow-hidden">
-          <i class="fas fa-user text-4xl text-zinc-600"></i>
+      <!-- DP Loader / Profile Image -->
+      <div class="relative w-28 h-28 mx-auto mb-4">
+        <div class="absolute inset-0 bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600 rounded-full animate-pulse p-1"></div>
+        <img id="user-dp" src="https://via.placeholder.com/150" class="w-full h-full rounded-full object-cover relative z-10 border-2 border-black" alt="Profile DP">
+      </div>
+
+      <!-- User Info -->
+      <div class="flex items-center justify-center space-x-1">
+        <h2 id="user-fullname" class="text-xl font-bold text-white">Loading...</h2>
+        <i id="verified-badge" class="fas fa-check-circle text-blue-500 text-sm hidden"></i>
+      </div>
+      <p id="user-handle" class="text-sm text-pink-400 font-medium">@username</p>
+      
+      <p id="user-bio" class="text-xs text-zinc-400 mt-3 px-2 line-clamp-3">Loading biography...</p>
+
+      <!-- Stats Grid -->
+      <div class="grid grid-cols-3 gap-2 bg-zinc-950 border border-zinc-800 rounded-2xl p-3 mt-5">
+        <div>
+          <span id="stat-posts" class="block font-bold text-base text-white">0</span>
+          <span class="text-[10px] text-zinc-500 uppercase">Posts</span>
+        </div>
+        <div>
+          <span id="stat-followers" class="block font-bold text-base text-white">0</span>
+          <span class="text-[10px] text-zinc-500 uppercase">Followers</span>
+        </div>
+        <div>
+          <span id="stat-following" class="block font-bold text-base text-white">0</span>
+          <span class="text-[10px] text-zinc-500 uppercase">Following</span>
         </div>
       </div>
 
-      <h2 id="target-username" class="text-xl font-extrabold text-white tracking-wide">@Mohit_kushwah_17</h2>
-      <p class="text-xs text-zinc-400 mt-1">Real Instagram Profile Preview</p>
-
-      <div class="mt-6 space-y-3">
-        <button onclick="openRealProfile()" class="w-full bg-gradient-to-r from-pink-500 via-red-500 to-purple-600 text-white font-bold py-3 px-4 rounded-2xl shadow-lg hover:opacity-95 transition flex items-center justify-center space-x-2 text-sm">
-          <span>View Real Profile & Posts</span>
-          <i class="fas fa-arrow-right text-xs"></i>
-        </button>
-
-        <button onclick="openRealReels()" class="w-full bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-semibold py-3 px-4 rounded-2xl border border-zinc-700 transition flex items-center justify-center space-x-2 text-sm">
-          <i class="fas fa-film text-pink-400"></i>
-          <span>Watch Real Reels</span>
-        </button>
+      <!-- Action Status -->
+      <div class="mt-5">
+        <div class="w-full bg-zinc-800 text-zinc-300 font-semibold py-2.5 rounded-xl text-xs flex items-center justify-center space-x-2">
+          <span class="w-2 h-2 rounded-full bg-green-500 animate-ping"></span>
+          <span>In-App Live Data Active</span>
+        </div>
       </div>
-    </div>
 
-    <!-- Quick Info Footer -->
-    <div class="text-center text-zinc-500 text-xs py-3">
-      100% Real Live Instagram Viewer
     </div>
   </main>
 
   <!-- Search Modal -->
   <div id="search-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
     <div class="bg-zinc-900 w-full max-w-sm rounded-3xl p-6 border border-zinc-800 shadow-2xl">
-      <div class="flex justify-between items-center mb-5">
-        <h3 class="font-bold text-lg text-white">Kisi Bhi ID ko Search Karein</h3>
-        <button onclick="closeSearchModal()" class="text-zinc-400 hover:text-white p-1">
-          <i class="fas fa-times text-xl"></i>
-        </button>
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="font-bold text-lg text-white">ID Search Karein</h3>
+        <button onclick="closeSearchModal()" class="text-zinc-400 hover:text-white"><i class="fas fa-times text-xl"></i></button>
       </div>
       
-      <div class="relative mb-5">
-        <span class="absolute left-4 top-3.5 text-zinc-500 font-medium">@</span>
+      <div class="relative mb-4">
+        <span class="absolute left-4 top-3.5 text-zinc-500">@</span>
         <input type="text" id="search-input" placeholder="e.g. virat.kohli" class="w-full bg-zinc-800 text-white pl-9 pr-4 py-3 rounded-2xl border border-zinc-700 focus:outline-none focus:border-pink-500 text-sm">
       </div>
       
-      <button onclick="setNewUser()" class="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:opacity-90 text-white font-bold py-3 rounded-2xl text-sm transition shadow-lg">
-        ID Set Karein
+      <button onclick="searchProfile()" class="w-full bg-gradient-to-r from-pink-500 to-purple-600 text-white font-bold py-3 rounded-2xl text-sm shadow-lg">
+        App Ke Andar Dekhein
       </button>
     </div>
   </div>
 
   <script>
-    let currentUsername = 'Mohit_kushwah_17';
-
     function openSearchModal() { document.getElementById('search-modal').classList.remove('hidden'); }
     function closeSearchModal() { document.getElementById('search-modal').classList.add('hidden'); }
 
-    function updateProfileUI(username) {
-      currentUsername = username.replace('@', '').trim();
-      if (!currentUsername) return;
-      document.getElementById('target-username').innerText = '@' + currentUsername;
-      localStorage.setItem('saved_insta_user', currentUsername);
+    async function fetchUserData(username) {
+      username = username.replace('@', '').trim();
+      if (!username) return;
+
+      document.getElementById('user-fullname').innerText = "Fetching Data...";
+      document.getElementById('user-handle').innerText = '@' + username;
+      
+      try {
+        const res = await fetch('/api/profile/' + username);
+        const data = await res.json();
+        
+        if (data.status === 'success') {
+          document.getElementById('user-dp').src = data.profile_pic;
+          document.getElementById('user-fullname').innerText = data.full_name || username;
+          document.getElementById('user-handle').innerText = '@' + data.username;
+          document.getElementById('user-bio').innerText = data.biography || "No bio available";
+          
+          document.getElementById('stat-posts').innerText = data.posts_count;
+          document.getElementById('stat-followers').innerText = data.followers;
+          document.getElementById('stat-following').innerText = data.following;
+
+          if (data.is_verified) {
+            document.getElementById('verified-badge').classList.remove('hidden');
+          } else {
+            document.getElementById('verified-badge').classList.add('hidden');
+          }
+        }
+      } catch (err) {
+        document.getElementById('user-fullname').innerText = username;
+        document.getElementById('user-bio').innerText = "Error loading details";
+      }
     }
 
-    function setNewUser() {
-      const val = document.getElementById('search-input').value;
-      if (val) {
-        updateProfileUI(val);
+    function searchProfile() {
+      const input = document.getElementById('search-input').value;
+      if (input) {
+        fetchUserData(input);
         closeSearchModal();
       }
     }
 
-    function openRealProfile() {
-      window.open('https://www.instagram.com/' + currentUsername + '/', '_blank');
-    }
+    window.onload = function() {
+      fetchUserData('Mohit_kushwah_17');
+    };
+  </script>
+</body>
+</html>    }
 
     function openRealReels() {
       window.open('https://www.instagram.com/' + currentUsername + '/reels/', '_blank');
