@@ -1,1 +1,143 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Insta Viewer</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    .story-ring { background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%); }
+  </style>
+</head>
+<body class="bg-black text-white min-h-screen pb-16">
+
+  <!-- Header -->
+  <header class="sticky top-0 z-40 bg-black/95 backdrop-blur border-b border-zinc-800 px-4 py-3 flex justify-between items-center">
+    <div class="flex items-center space-x-2">
+      <h1 id="header-username" class="font-bold text-xl tracking-tight">instagram_user</h1>
+      <i class="fas font-xs fa-chevron-down text-zinc-400"></i>
+    </div>
+    <div class="flex items-center space-x-4">
+      <button onclick="openSearchModal()" class="text-zinc-200 hover:text-white">
+        <i class="fas fa-search text-xl"></i>
+      </button>
+      <i class="far fa-heart text-xl text-zinc-200"></i>
+      <i class="far fa-paper-plane text-xl text-zinc-200"></i>
+    </div>
+  </header>
+
+  <!-- Profile Info -->
+  <main class="max-w-md mx-auto">
+    <div class="px-4 pt-4 pb-2">
+      <div class="flex items-center justify-between mb-4">
+        <div class="story-ring p-[2px] rounded-full">
+          <img id="profile-pic" class="w-20 h-20 rounded-full border-2 border-black object-cover" src="https://via.placeholder.com/150" alt="Profile">
+        </div>
+        <div class="flex space-x-6 text-center">
+          <div>
+            <div id="posts-count" class="font-bold text-lg">0</div>
+            <div class="text-xs text-zinc-400">Posts</div>
+          </div>
+          <div>
+            <div id="followers-count" class="font-bold text-lg">0</div>
+            <div class="text-xs text-zinc-400">Followers</div>
+          </div>
+          <div>
+            <div id="following-count" class="font-bold text-lg">0</div>
+            <div class="text-xs text-zinc-400">Following</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="full-name" class="font-bold text-sm">User Name</div>
+      <div id="bio-text" class="text-sm mt-1 whitespace-pre-line text-zinc-200">Profile Bio</div>
+
+      <!-- Action Buttons -->
+      <div class="flex space-x-2 mt-4">
+        <button class="flex-1 bg-zinc-800 font-semibold py-1.5 rounded-lg text-sm">Following</button>
+        <button class="flex-1 bg-zinc-800 font-semibold py-1.5 rounded-lg text-sm">Message</button>
+      </div>
+    </div>
+
+    <!-- Highlights -->
+    <div class="flex space-x-4 overflow-x-auto no-scrollbar px-4 py-3 border-b border-zinc-900">
+      <div class="flex flex-col items-center space-y-1 min-w-[64px]">
+        <div class="w-16 h-16 rounded-full border border-zinc-700 p-0.5">
+          <img class="w-full h-full rounded-full object-cover" src="https://via.placeholder.com/80" alt="Highlight">
+        </div>
+        <span class="text-xs text-zinc-400 truncate w-16 text-center">Highlights</span>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="flex justify-around border-b border-zinc-800">
+      <button class="py-3 flex-1 text-center border-b-2 border-white text-white"><i class="fas fa-th text-lg"></i></button>
+      <button class="py-3 flex-1 text-center text-zinc-500"><i class="fas fa-film text-lg"></i></button>
+      <button class="py-3 flex-1 text-center text-zinc-500"><i class="far fa-id-badge text-lg"></i></button>
+    </div>
+
+    <!-- Grid -->
+    <div id="posts-grid" class="grid grid-cols-3 gap-0.5 mt-0.5">
+      <!-- Media Items will load here -->
+    </div>
+  </main>
+
+  <!-- Search Modal -->
+  <div id="search-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-zinc-900 w-full max-w-sm rounded-2xl p-4 border border-zinc-800">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="font-bold text-lg">Search Profile</h3>
+        <button onclick="closeSearchModal()" class="text-zinc-400 hover:text-white"><i class="fas fa-times text-xl"></i></button>
+      </div>
+      <input type="text" id="search-input" placeholder="Enter Instagram Username..." class="w-full bg-zinc-800 text-white px-4 py-2.5 rounded-xl border border-zinc-700 focus:outline-none focus:border-blue-500 mb-4">
+      <button onclick="fetchProfile()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-xl">View Profile</button>
+    </div>
+  </div>
+
+  <script>
+    function openSearchModal() { document.getElementById('search-modal').classList.remove('hidden'); }
+    function closeSearchModal() { document.getElementById('search-modal').classList.add('hidden'); }
+
+    function fetchProfile() {
+      const username = document.getElementById('search-input').value.trim();
+      if (!username) return;
+      
+      // Auto-save last searched username
+      localStorage.setItem('saved_user', username);
+      loadProfileData(username);
+      closeSearchModal();
+    }
+
+    function loadProfileData(username) {
+      document.getElementById('header-username').innerText = username;
+      document.getElementById('full-name').innerText = username.toUpperCase();
+      document.getElementById('bio-text').innerText = "Viewing profile of @" + username;
+      document.getElementById('posts-count').innerText = "32";
+      document.getElementById('followers-count').innerText = "1.2k";
+      document.getElementById('following-count').innerText = "450";
+
+      const grid = document.getElementById('posts-grid');
+      grid.innerHTML = '';
+      for (let i = 1; i <= 9; i++) {
+        grid.innerHTML += `
+          <div class="aspect-square bg-zinc-800 relative group overflow-hidden">
+            <img src="https://picsum.photos/300/300?random=${i}" class="w-full h-full object-cover">
+          </div>
+        `;
+      }
+    }
+
+    // Auto load last saved user on launch
+    window.onload = function() {
+      const savedUser = localStorage.getItem('saved_user') || 'instagram';
+      document.getElementById('search-input').value = savedUser;
+      loadProfileData(savedUser);
+    };
+  </script>
+</body>
+</html>
